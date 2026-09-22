@@ -47,14 +47,41 @@ install_base() {
   fi
 }
 
+add_dnf_repo() {
+  local url="$1"
+  if [[ -f /etc/yum.repos.d/docker-ce.repo ]]; then
+    return
+  fi
+  dnf config-manager --add-repo "$url" \
+    || dnf config-manager addrepo --from-repofile="$url"
+}
+
+install_docker_rhel() {
+  # get.docker.com توزیع almalinux و rocky را قبول نمی‌کند.
+  # AlmaLinux باینری‌سازگار با RHEL است و مخزن docker-ce همان نسخه را دارد.
+  log "نصب Docker از مخزن RHEL"
+  add_dnf_repo "https://download.docker.com/linux/rhel/docker-ce.repo"
+  rpm --import https://download.docker.com/linux/rhel/gpg || true
+  local packages=(docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin)
+  if ! dnf install -y "${packages[@]}"; then
+    log "Docker با podman تداخل دارد؛ podman حذف و نصب دوباره انجام می‌شود"
+    dnf remove -y podman buildah podman-docker || true
+    dnf install -y "${packages[@]}"
+  fi
+}
+
 install_docker() {
   if command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then
     log "Docker و Compose از قبل نصب هستند"
     systemctl enable --now docker
     return
   fi
-  log "نصب Docker"
-  curl -fsSL https://get.docker.com | sh
+  if is_dnf && [[ "$OS_ID" != "fedora" ]]; then
+    install_docker_rhel
+  else
+    log "نصب Docker"
+    curl -fsSL https://get.docker.com | sh
+  fi
   systemctl enable --now docker
   docker compose version >/dev/null 2>&1 || die "افزونه docker compose نصب نشد."
 }
