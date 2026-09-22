@@ -70,10 +70,20 @@ install_docker_rhel() {
   fi
 }
 
+start_docker() {
+  systemctl enable docker
+  if systemctl restart docker; then
+    return
+  fi
+  echo
+  journalctl -u docker.service -n 60 --no-pager || true
+  die "سرویس Docker بالا نیامد. چند خط بالاتر، پیام dockerd علت را می‌گوید."
+}
+
 install_docker() {
   if command -v docker >/dev/null 2>&1 && docker compose version >/dev/null 2>&1; then
     log "Docker و Compose از قبل نصب هستند"
-    systemctl enable --now docker
+    start_docker
     return
   fi
   if is_dnf && [[ "$OS_ID" != "fedora" ]]; then
@@ -82,7 +92,7 @@ install_docker() {
     log "نصب Docker"
     curl -fsSL https://get.docker.com | sh
   fi
-  systemctl enable --now docker
+  start_docker
   docker compose version >/dev/null 2>&1 || die "افزونه docker compose نصب نشد."
 }
 
