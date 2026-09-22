@@ -1,0 +1,54 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 210 33% 98%;
+  --foreground: 222 47% 11%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+  --primary: 226 72% 48%;
+  --primary-foreground: 210 40% 98%;
+  --muted: 214 32% 94%;
+  --muted-foreground: 215 16% 40%;
+  --border: 214 28% 88%;
+  --input: 214 28% 88%;
+  --ring: 226 72% 48%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
+}
+
+.dark {
+  --background: 224 32% 8%;
+  --foreground: 210 40% 98%;
+  --card: 223 28% 12%;
+  --card-foreground: 210 40% 98%;
+  --primary: 226 86% 68%;
+  --primary-foreground: 224 32% 8%;
+  --muted: 223 22% 18%;
+  --muted-foreground: 215 20% 72%;
+  --border: 223 18% 22%;
+  --input: 223 18% 22%;
+  --ring: 226 86% 68%;
+  --destructive: 0 72% 55%;
+  --destructive-foreground: 0 0% 100%;
+}
+
+* {
+  border-color: hsl(var(--border));
+}
+
+body {
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+  font-family: Vazirmatn, Tahoma, sans-serif;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 999px;
+}

@@ -1,0 +1,19 @@
+from __future__ import annotations
+
+
+class AppError(Exception):
+    def __init__(self, code: str, message: str, status_code: int = 400) -> None:
+        self.code = code
+        self.message = message
+        self.status_code = status_code
+        super().__init__(message)
+
+
+class AudioProcessingError(Exception):
+    def __init__(self, message: str, *, permanent: bool = True) -> None:
+        self.permanent = permanent
+        super().__init__(message)
+
+
+class JobCancelled(Exception):
+    pass

@@ -1,0 +1,150 @@
+{
+  "info": {
+    "name": "STT Platform",
+    "description": "Central Persian speech-to-text API. Create an API key in the admin panel, then set the apiKey collection variable.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8000" },
+    { "key": "apiKey", "value": "sk_stt_replace_me" },
+    { "key": "jobId", "value": "" },
+    { "key": "adminEmail", "value": "admin@example.com" },
+    { "key": "adminPassword", "value": "change-this-password" },
+    { "key": "adminToken", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        { "name": "Overall", "request": { "method": "GET", "url": "{{baseUrl}}/health" } },
+        { "name": "GPU", "request": { "method": "GET", "url": "{{baseUrl}}/health/gpu" } },
+        { "name": "Queue", "request": { "method": "GET", "url": "{{baseUrl}}/health/queue" } },
+        { "name": "Database", "request": { "method": "GET", "url": "{{baseUrl}}/health/database" } }
+      ]
+    },
+    {
+      "name": "Admin login",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}" },
+        "url": "{{baseUrl}}/api/v1/admin/auth/login"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const body = pm.response.json();",
+              "if (body.access_token) pm.collectionVariables.set('adminToken', body.access_token);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "List models",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{apiKey}}" }],
+        "url": "{{baseUrl}}/api/v1/models"
+      }
+    },
+    {
+      "name": "Create transcription",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Authorization", "value": "Bearer {{apiKey}}" }],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            { "key": "file", "type": "file", "src": "" },
+            { "key": "language", "type": "text", "value": "fa" },
+            { "key": "model", "type": "text", "value": "large-v3" },
+            { "key": "priority", "type": "text", "value": "5" },
+            { "key": "vad_filter", "type": "text", "value": "true" },
+            { "key": "word_timestamps", "type": "text", "value": "true" }
+          ]
+        },
+        "url": "{{baseUrl}}/api/v1/transcriptions"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const body = pm.response.json();",
+              "if (body.job_id) pm.collectionVariables.set('jobId', body.job_id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Get transcription",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{apiKey}}" }],
+        "url": "{{baseUrl}}/api/v1/transcriptions/{{jobId}}"
+      }
+    },
+    {
+      "name": "Result JSON",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{apiKey}}" }],
+        "url": "{{baseUrl}}/api/v1/transcriptions/{{jobId}}/result?format=json"
+      }
+    },
+    {
+      "name": "Result TXT",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{apiKey}}" }],
+        "url": "{{baseUrl}}/api/v1/transcriptions/{{jobId}}/result?format=txt"
+      }
+    },
+    {
+      "name": "Result SRT",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{apiKey}}" }],
+        "url": "{{baseUrl}}/api/v1/transcriptions/{{jobId}}/result?format=srt"
+      }
+    },
+    {
+      "name": "Result VTT",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{apiKey}}" }],
+        "url": "{{baseUrl}}/api/v1/transcriptions/{{jobId}}/result?format=vtt"
+      }
+    },
+    {
+      "name": "Usage",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{apiKey}}" }],
+        "url": "{{baseUrl}}/api/v1/usage"
+      }
+    },
+    {
+      "name": "Queue status",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{apiKey}}" }],
+        "url": "{{baseUrl}}/api/v1/queue/status"
+      }
+    },
+    {
+      "name": "Cancel transcription",
+      "request": {
+        "method": "DELETE",
+        "header": [{ "key": "Authorization", "value": "Bearer {{apiKey}}" }],
+        "url": "{{baseUrl}}/api/v1/transcriptions/{{jobId}}"
+      }
+    }
+  ]
+}
