@@ -95,12 +95,18 @@ install_nvidia_driver() {
     return
   fi
   log "درایور NVIDIA پیدا نشد؛ در حال نصب"
-  if is_dnf; then
-    dnf install -y gcc make elfutils-libelf-devel dkms "kernel-devel-$(uname -r)" "kernel-headers-$(uname -r)" \
-      || dnf install -y gcc make elfutils-libelf-devel dkms kernel-devel kernel-headers
-    dnf config-manager --add-repo "https://developer.download.nvidia.com/compute/cuda/repos/rhel${VERSION_MAJOR}/x86_64/cuda-rhel${VERSION_MAJOR}.repo"
+  if [[ "$OS_ID" == "almalinux" ]]; then
+    # روی AlmaLinux 9 و 10 درایور امضاشده از مخزن خود توزیع نصب می‌شود و به dkms نیاز ندارد.
+    dnf install -y almalinux-release-nvidia-driver
+    dnf install -y nvidia-open-kmod nvidia-driver nvidia-driver-cuda
+  elif is_dnf; then
+    dnf install -y gcc make elfutils-libelf-devel "kernel-devel-$(uname -r)" "kernel-headers-$(uname -r)" \
+      || dnf install -y gcc make elfutils-libelf-devel kernel-devel kernel-headers
+    dnf config-manager --add-repo "https://developer.download.nvidia.com/compute/cuda/repos/rhel${VERSION_MAJOR}/x86_64/cuda-rhel${VERSION_MAJOR}.repo" \
+      || dnf config-manager addrepo --from-repofile="https://developer.download.nvidia.com/compute/cuda/repos/rhel${VERSION_MAJOR}/x86_64/cuda-rhel${VERSION_MAJOR}.repo"
     dnf clean all
     dnf module install -y nvidia-driver:latest-dkms
+    dnf install -y nvidia-driver-cuda || true
   elif is_apt; then
     export DEBIAN_FRONTEND=noninteractive
     apt-get install -y "linux-headers-$(uname -r)" ubuntu-drivers-common || apt-get install -y "linux-headers-$(uname -r)"
@@ -110,7 +116,7 @@ install_nvidia_driver() {
       apt-get install -y nvidia-driver
     fi
   fi
-  modprobe nvidia || true
+  modprobe nvidia || modprobe nvidia_drm || true
   if ! nvidia_ok; then
     cat <<EOF
 
