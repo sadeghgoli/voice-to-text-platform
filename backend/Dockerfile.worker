@@ -13,7 +13,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 COPY requirements.txt requirements-worker.txt ./
-RUN pip install --no-cache-dir -r requirements-worker.txt
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir -r requirements-worker.txt
 COPY . .
 RUN mkdir -p /data/storage /data/temp /data/models
 

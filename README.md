@@ -90,9 +90,17 @@ docker compose up -d --build
 
 سرویس API بعد از بالا آمدن Postgres و Redis، مهاجرت Alembic را اجرا می‌کند، مدل‌ها و تنظیمات پیش‌فرض را seed می‌کند و اگر ایمیل ادمین وجود نداشته باشد آن را می‌سازد. اولین اجرای Worker مدل `large-v3` را دانلود می‌کند و ممکن است چند دقیقه طول بکشد.
 
-- API و Swagger: `http://SERVER:8000/docs`
-- ReDoc: `http://SERVER:8000/redoc`
-- پنل: `http://SERVER:3000`
+- API و Swagger: `http://SERVER:9002/docs`
+- ReDoc: `http://SERVER:9002/redoc`
+- پنل: `http://SERVER:9001`
+
+اگر سرویس از قبل بالا باشد و فقط بخواهید همین پورت‌ها را اعمال کنید:
+
+```bash
+sudo bash set-ports.sh
+```
+
+نحوه اتصال نرم‌افزارها، ارسال فایل و دریافت متن در [docs/api-connection.md](docs/api-connection.md) است.
 
 دستورهای معادل داخل کانتینر API:
 
@@ -112,7 +120,7 @@ docker compose exec api python -m app.scripts.create_admin --email admin@example
 4. فایل را بفرستید:
 
 ```bash
-curl -s -X POST http://localhost:8000/api/v1/transcriptions \
+curl -s -X POST http://localhost:9002/api/v1/transcriptions \
   -H "Authorization: Bearer sk_stt_YOUR_KEY" \
   -F "file=@sample.mp3" \
   -F "language=fa" \
@@ -128,10 +136,10 @@ curl -s -X POST http://localhost:8000/api/v1/transcriptions \
 سپس وضعیت و نتیجه:
 
 ```bash
-curl -s http://localhost:8000/api/v1/transcriptions/JOB_ID \
+curl -s http://localhost:9002/api/v1/transcriptions/JOB_ID \
   -H "Authorization: Bearer sk_stt_YOUR_KEY"
 
-curl -s "http://localhost:8000/api/v1/transcriptions/JOB_ID/result?format=srt" \
+curl -s "http://localhost:9002/api/v1/transcriptions/JOB_ID/result?format=srt" \
   -H "Authorization: Bearer sk_stt_YOUR_KEY"
 ```
 
@@ -142,7 +150,7 @@ curl -s "http://localhost:8000/api/v1/transcriptions/JOB_ID/result?format=srt" \
 ```js
 import fs from "node:fs";
 
-const base = "http://localhost:8000";
+const base = "http://localhost:9002";
 const key = process.env.STT_API_KEY;
 const body = new FormData();
 body.append("file", new Blob([fs.readFileSync("sample.mp3")]), "sample.mp3");

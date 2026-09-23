@@ -16,7 +16,7 @@ class Settings(BaseSettings):
 
     database_url: str = "postgresql+psycopg://stt:stt@localhost:5432/stt"
     redis_url: str = "redis://localhost:6379/0"
-    cors_origins: str = "http://localhost:3000"
+    cors_origins: str = "http://localhost:9001"
 
     storage_path: str = "./data/storage"
     temp_path: str = "./data/temp"

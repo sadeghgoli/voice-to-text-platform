@@ -37,7 +37,7 @@ services:
       redis:
         condition: service_healthy
     ports:
-      - "8000:8000"
+      - "${API_PUBLISH_PORT:-9002}:8000"
     volumes:
       - storage:/data/storage
       - temp:/data/temp
@@ -69,7 +69,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - "${FRONTEND_PUBLISH_PORT:-9001}:3000"
     depends_on:
       api:
         condition: service_healthy

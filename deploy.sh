@@ -205,7 +205,9 @@ POSTGRES_DB=stt
 DATABASE_URL=postgresql+psycopg://stt:${db_pass}@postgres:5432/stt
 
 REDIS_URL=redis://redis:6379/0
-CORS_ORIGINS=http://localhost:3000,http://${host}:3000
+CORS_ORIGINS=http://localhost:9001,http://${host}:9001
+FRONTEND_PUBLISH_PORT=9001
+API_PUBLISH_PORT=9002
 
 STORAGE_PATH=/data/storage
 TEMP_PATH=/data/temp
@@ -227,14 +229,14 @@ EOF
 
 open_firewall() {
   if systemctl is-active --quiet firewalld; then
-    log "باز کردن پورت‌های ۸۰۰۰ و ۳۰۰۰ در firewalld"
-    firewall-cmd --permanent --add-port=8000/tcp
-    firewall-cmd --permanent --add-port=3000/tcp
+    log "باز کردن پورت‌های ۹۰۰۲ و ۹۰۰۱ در firewalld"
+    firewall-cmd --permanent --add-port=9002/tcp
+    firewall-cmd --permanent --add-port=9001/tcp
     firewall-cmd --reload
   elif command -v ufw >/dev/null 2>&1 && ufw status | grep -q 'Status: active'; then
-    log "باز کردن پورت‌های ۸۰۰۰ و ۳۰۰۰ در ufw"
-    ufw allow 8000/tcp
-    ufw allow 3000/tcp
+    log "باز کردن پورت‌های ۹۰۰۲ و ۹۰۰۱ در ufw"
+    ufw allow 9002/tcp
+    ufw allow 9001/tcp
   fi
 }
 
@@ -261,14 +263,14 @@ verify_stack() {
   docker compose up -d --build
 
   log "منتظر سالم شدن API"
-  wait_http "http://127.0.0.1:8000/health" 60 || {
+  wait_http "http://127.0.0.1:9002/health" 60 || {
     docker compose ps
     docker compose logs --tail 80 api
     die "API سالم نشد."
   }
 
   log "منتظر پنل مدیریت"
-  wait_http "http://127.0.0.1:3000/login" 40 || {
+  wait_http "http://127.0.0.1:9001/login" 40 || {
     docker compose logs --tail 80 frontend
     die "پنل مدیریت بالا نیامد."
   }
@@ -298,7 +300,7 @@ verify_stack() {
       docker compose logs --tail 100 worker
       die "Worker در حین بارگذاری مدل متوقف شد."
     }
-    if curl -fsS "http://127.0.0.1:8000/health" | grep -q '"worker": "online"'; then
+    if curl -fsS "http://127.0.0.1:9002/health" | grep -q '"worker": "online"'; then
       online=1
       break
     fi
@@ -306,7 +308,7 @@ verify_stack() {
   done
 
   echo
-  curl -fsS "http://127.0.0.1:8000/health" || true
+  curl -fsS "http://127.0.0.1:9002/health" || true
   echo
   docker compose ps
 
@@ -319,9 +321,9 @@ verify_stack() {
   cat <<EOF
 
 استقرار انجام شد.
-  مستندات API:  http://${host}:8000/docs
-  سلامت سرویس: http://${host}:8000/health
-  پنل مدیریت:   http://${host}:3000
+  مستندات API:  http://${host}:9002/docs
+  سلامت سرویس: http://${host}:9002/health
+  پنل مدیریت:   http://${host}:9001
   ایمیل ادمین:  ${admin_email}
 EOF
   if [[ "${CREATED_ENV:-0}" == "1" ]]; then
